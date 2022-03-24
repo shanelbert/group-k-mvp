@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>MVP Landing Page</title>
+	<!-- <link rel="stylesheet" href="main.css"> -->
+
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-27FRNKMMNF"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+
+		gtag('config', 'G-27FRNKMMNF');
+	</script>
+</head>
+
+<body>
+	<div id="root">
+		hello world!
+	</div>
+
+	<!-- <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+	<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+
+	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script> -->
+
+	<!-- <script type="text/babel">
+
+		class App extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = {
+					showResult: false,
+					player_info: [],
+					player_image: []
+				};
+			}
+
+			predict(userID) {
+				fetch(`http://127.0.0.1:5000/image?userID=${userID}`)
+					// fetch(`https://fpl-captaincy-recommendation.herokuapp.com/image?userID=${userID}`)
+					.then(response => response.json())
+					.then((data) => {
+						const parser = new DOMParser();
+						const doc = parser.parseFromString(data['content'], 'text/html')
+
+						let pictureNodes = doc.querySelectorAll('picture');
+						let playerList = [];
+						for (let i = 0; i < pictureNodes.length; i++) {
+							playerList.push(pictureNodes[i].nextElementSibling.firstChild.textContent);
+						}
+
+						let imgNodes = doc.querySelectorAll('picture > img');
+						let imageList = [];
+						let tempList;
+						let temp;
+						for (let i = 0; i < imgNodes.length; i++) {
+							tempList = imgNodes[i].getAttribute('srcset').replaceAll('\n', '').split(',');
+							tempList = tempList[tempList.length - 1].trim().split(" ");
+							imageList.push('https://fantasy.premierleague.com' + tempList[0])
+						}
+
+						let playerImage = {};
+						for (let i = 0; i < playerList.length; i++) {
+							playerImage[playerList[i]] = imageList[i];
+						}
+
+						this.setState({ player_image: playerImage });
+					})
+					.catch(() => {
+						console.log('Tidak dapat memuat gambar');
+					});
+
+				fetch(`http://127.0.0.1:5000/prediction`, {
+					// fetch(`https://fpl-captaincy-recommendation.herokuapp.com/prediction`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ userID: userID })
+				})
+					.then(response => response.json())
+					.then((data) => {
+						this.setState({ showResult: true, player_info: data.player_info });
+					})
+					.catch(() => {
+						alert('Maaf, permintaan Anda gagal diproses. Coba kembali setelah beberapa saat');
+					});
+			}
+
+			render() {
+				if (this.state.showResult && this.state.player_image
+					&& (this.state.player_image.constructor === Object) && (Object.keys(this.state.player_image).length !== 0)) {
+					return <Result player_info={this.state.player_info} player_image={this.state.player_image} />
+				}
+
+				return <Landing predict={this.predict.bind(this)} />
+			}
+		}
+
+		class Landing extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = {};
+				this.myRef = React.createRef();
+			}
+
+			render() {
+				return (
+					<div style={{ width: "100%", height: "100vh" }}>
+						<div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+							<div className="paper container">
+
+								<div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: '300px' }}>
+									<p style={{ fontSize: "2rem", margin: "0", textAlign: 'center' }}>
+										<b>
+											FPL Captaincy Recommendation
+										</b>
+									</p>
+
+									<p style={{ textAlign: 'center', margin: "8px 0 0 0" }}>
+										Masukkan FPL ID Anda dan tekan tombol <i>PREDICT</i> untuk mendapatkan rekomendasi pemilihan kapten!
+									</p>
+								</div>
+
+								<div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center", marginTop: "40px" }}>
+									<div style={{ display: "flex", flexDirection: "column", alignItems: 'center' }}>
+										<input type='text' ref={this.myRef} style={{ height: "2rem", fontSize: "1rem" }} placeholder="FPL ID" />
+									</div>
+								</div>
+
+								<button onClick={() => { this.props.predict(this.myRef.current.value) }} style={{ marginTop: "40px" }}>
+									Predict
+								</button>
+
+							</div>
+						</div>
+					</div>
+				);
+			}
+		}
+
+		class Result extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = {
+					players: null
+				};
+				this.myRef = React.createRef();
+			}
+
+			componentDidMount() {
+				let complete_info = this.props.player_info.map((e) => { return { ...e } })
+				for (let [player_name, url] of Object.entries(this.props.player_image)) {
+					let idx = 0;
+					for (let player of this.props.player_info) {
+						if (player.name.includes(player_name)) {
+							complete_info[idx]['imageURL'] = url;
+							break;
+						}
+						idx++;
+					}
+				}
+
+				this.setState({ players: complete_info });
+			}
+
+
+			render() {
+				return (
+					<>
+						<div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+							<div className='content_container' style={{ marginTop: '56px', position: 'relative' }}>
+								{
+									this.state.players === null ? null : this.state.players.map((player_info, index) =>
+										<div
+											className="row"
+											style={{
+												backgroundColor: (index !== 0) ? 'rgb(239, 239, 239)' : undefined,
+												backgroundImage: (index === 0) ? 'linear-gradient(135deg, rgb(32, 107, 92) 0%, rgb(32, 107, 92) 10%, rgb(3, 240, 130) 100%)' : undefined
+											}}>
+
+											{
+												(index === 0)
+													?
+													<div className="player_img" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+														<img className="captain_img" style={{}} src={player_info.imageURL} />
+													</div>
+													:
+													<div className="player_img" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+														<img className="other_img" style={{}} src={player_info.imageURL} />
+													</div>
+											}
+
+											<div className="player_desc_wide_screen" style={{ alignItems: 'stretch', flexGrow: '1', marginLeft: '16px' }}>
+												<div style={{ width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+													<p style={{ width: '100%', fontSize: "1.6rem", margin: '0', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+														<b>{player_info.name}</b>
+													</p>
+													<p style={{ fontSize: "1.4rem", margin: '0' }}>
+														{'Prediksi Poin: ' + player_info.point_prediction}
+													</p>
+												</div>
+												{
+													(index === 0) ?
+														<div style={{ width: '50%', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+															<p style={{ fontSize: "2rem", margin: '0' }}>
+																<b>Rekomendasi kapten</b>
+															</p>
+														</div>
+														: null
+												}
+											</div>
+
+											<div className="player_desc_small_screen" style={{ flexDirection: 'column', maxWidth: '75%', width: '75%', alignItems: 'flex-start', marginLeft: '16px' }}>
+												{
+													(index === 0) ?
+														<div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+															<p style={{ fontSize: "1.6rem", margin: '0' }}>
+																<b>Rekomendasi kapten</b>
+															</p>
+														</div>
+														: null
+												}
+												<div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+													<p style={{ width: '100%', fontSize: "1.2rem", margin: '0', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+														{player_info.name}
+													</p>
+													<p style={{ fontSize: "1rem", margin: '0' }}>
+														{'Prediksi Poin: ' + player_info.point_prediction}
+													</p>
+												</div>
+											</div>
+
+										</div>
+									)}
+							</div>
+						</div>
+					</>
+				)
+			}
+
+		}
+
+		const domContainer = document.querySelector('#root');
+		ReactDOM.render(<App />, domContainer);
+	</script> -->
+</body>
+
+</html>
